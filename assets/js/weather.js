@@ -1,5 +1,8 @@
+// import {dfs_xy_conv, apiKey} from "./utils.js";
+import {apiKey, dfs_xy_conv} from "./utils.js";
+
 const $ = (elem) => document.querySelector(elem);
-const API_KEY = config.apikey;
+const API_KEY = apiKey;
 
 // 시간 데이터 설정
 const date = new Date();
@@ -32,20 +35,19 @@ const getCurrentLocation = async () => {
     const { latitude: lat, longitude: lon } = position.coords;
     const { x: latX, y: lonY } = dfs_xy_conv("toXY", lat, lon);
     const weatherData = await getWeather(latX, lonY, today, nowTime);
-    let temp, rainy;
-    weatherData.find(item => {
-      if(item.category === 'T1H') temp = item.obsrValue;
-      if(item.category === 'PTY') rainy = item.obsrValue;
-    });
-    return [temp, rainy];
+    return weatherData;
   } catch (error) {
-    throw error; // 위치 정보 동의 에러, getWeather 에러 처리
+    throw error; // 위치 정보 동의 error or getWeather error
   }
 };
 
 getCurrentLocation()
     .then(response => {
-      const [temp, rainy] = response;
+      let temp, rainy;
+      response.find(item => {
+        if(item.category === 'T1H') temp = item.obsrValue;
+        if(item.category === 'PTY') rainy = item.obsrValue;
+      });
       $('.temp').innerText = `현재 날씨는 ${temp}°C입니다`;
       $('.rainy').innerText = rainy > 0 ? '지금 비가 오고 있어요☂️' : '지금은 맑아요☀️'
     })

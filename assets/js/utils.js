@@ -1,15 +1,18 @@
-// LCC DFS 좌표변환을 위한 기초 자료
-var RE = 6371.00877; // 지구 반경(km)
-var GRID = 5.0; // 격자 간격(km)
-var SLAT1 = 30.0; // 투영 위도1(degree)
-var SLAT2 = 60.0; // 투영 위도2(degree)
-var OLON = 126.0; // 기준점 경도(degree)
-var OLAT = 38.0; // 기준점 위도(degree)
-var XO = 43; // 기준점 X좌표(GRID)
-var YO = 136; // 기1준점 Y좌표(GRID)
+export const apiKey = 'oqstjzumQ5124t7uVd5VZy%2F6QEtLK0YCF0b16HdHsW1nOAFd%2BxqVf742QW5XD9AQugVjvmT6AnUjMQ3%2BRlNyxw%3D%3D';
 
 // LCC DFS 좌표변환 ( code : "toXY"(위경도->좌표, v1:위도, v2:경도), "toLL"(좌표->위경도,v1:x, v2:y) )
-function dfs_xy_conv(code, v1, v2) {
+export const dfs_xy_conv = (code, v1, v2) => {
+
+  // LCC DFS 좌표변환을 위한 기초 자료
+  let RE = 6371.00877; // 지구 반경(km)
+  let GRID = 5.0; // 격자 간격(km)
+  let SLAT1 = 30.0; // 투영 위도1(degree)
+  let SLAT2 = 60.0; // 투영 위도2(degree)
+  let OLON = 126.0; // 기준점 경도(degree)
+  let OLAT = 38.0; // 기준점 위도(degree)
+  let XO = 43; // 기준점 X좌표(GRID)
+  let YO = 136; // 기1준점 Y좌표(GRID)
+
   const DEGRAD = Math.PI / 180.0;
   const RADDEG = 180.0 / Math.PI;
 
