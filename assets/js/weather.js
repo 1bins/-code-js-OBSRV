@@ -11,8 +11,8 @@ const today = date.toISOString().split('T')[0].replace(/-/g, '');
 const nowTime = date.getMinutes() < 40 ? (date.getHours() - 1).toString().padStart(2, '0') + '00' : (date.getHours()).toString().padStart(2, '0') + '00';
 
 // 기상청 현재 지역 날씨 가져오는 API
-const getWeather = async (x, y, today, nowTime) => {
-  const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${API_KEY}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=${today}&base_time=${nowTime}&nx=${x}&ny=${y}`;
+const getWeather = async (today, nowTime) => {
+  const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${API_KEY}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=${today}&base_time=${nowTime}&nx=60&ny=127`;
   try {
     const response = await axios.get(url, { responseType: 'json' });
     switch(response.data.response.header.resultCode){
@@ -26,23 +26,24 @@ const getWeather = async (x, y, today, nowTime) => {
   }
 }
 
-// 현재 지역 가져오기
-const getCurrentLocation = async () => {
-  try {
-    const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
-    });
-    const { latitude: lat, longitude: lon } = position.coords;
-    const { x: latX, y: lonY } = dfs_xy_conv("toXY", lat, lon);
-    const weatherData = await getWeather(latX, lonY, today, nowTime);
-    return weatherData;
-  } catch (error) {
-    throw error; // 위치 정보 동의 error or getWeather error
-  }
-};
+// // 현재 지역 가져오기
+// const getCurrentLocation = async () => {
+//   try {
+//     const position = await new Promise((resolve, reject) => {
+//       navigator.geolocation.getCurrentPosition(resolve, reject);
+//     });
+//     const { latitude: lat, longitude: lon } = position.coords;
+//     const { x: latX, y: lonY } = dfs_xy_conv("toXY", lat, lon);
+//     const weatherData = await getWeather(latX, lonY, today, nowTime);
+//     return weatherData;
+//   } catch (error) {
+//     throw error; // 위치 정보 동의 error or getWeather error
+//   }
+// };
 
-getCurrentLocation()
+getWeather(today, nowTime)
     .then(response => {
+      console.log(response)
       let temp, rainy;
       response.find(item => {
         if(item.category === 'T1H') temp = item.obsrValue;
