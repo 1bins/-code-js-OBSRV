@@ -1,14 +1,27 @@
-// import {dfs_xy_conv, apiKey} from "./utils.js";
-import {apiKey, dfs_xy_conv} from "./utils.js";
+import {apiKey} from "./utils.js";
+
+// fastClick
+window.addEventListener('DOMContentLoaded', function() {
+  FastClick.attach(document.body);
+}, false);
 
 const $ = (elem) => document.querySelector(elem);
 const API_KEY = apiKey;
 
 // 시간 데이터 설정
-const date = new Date();
-const today = date.toISOString().split('T')[0].replace(/-/g, '');
+const newDate = new Date();
+
+// 오늘날짜 구하기
+const today = () => {
+  const year = newDate.getFullYear();
+  const month = newDate.getMonth() + 1;
+  const date = newDate.getDate();
+
+  return `${year}${String(month).padStart(2,'0')}${String(date).padStart(2,'0')}`
+}
+
 // 기상청 자료 매시 40분에 업데이트, 40분 전에는 이전시간으로 나오도록
-const nowTime = date.getMinutes() < 40 ? (date.getHours() - 1).toString().padStart(2, '0') + '00' : (date.getHours()).toString().padStart(2, '0') + '00';
+const nowTime = newDate.getMinutes() < 40 ? (newDate.getHours() - 1).toString().padStart(2, '0') + '00' : (newDate.getHours()).toString().padStart(2, '0') + '00';
 
 // 기상청 현재 지역 날씨 가져오는 API
 const getWeather = async (today, nowTime) => {
@@ -19,43 +32,48 @@ const getWeather = async (today, nowTime) => {
       case '00':
         return response.data.response.body.items.item;
       default:
-        alert('error!') // server error (기상청)
+        console.log(response)
     }
   } catch(error){
     alert('error!'); // client error (ex APIKEY)
   }
 }
 
-// // 현재 지역 가져오기
-// const getCurrentLocation = async () => {
-//   try {
-//     const position = await new Promise((resolve, reject) => {
-//       navigator.geolocation.getCurrentPosition(resolve, reject);
-//     });
-//     const { latitude: lat, longitude: lon } = position.coords;
-//     const { x: latX, y: lonY } = dfs_xy_conv("toXY", lat, lon);
-//     const weatherData = await getWeather(latX, lonY, today, nowTime);
-//     return weatherData;
-//   } catch (error) {
-//     throw error; // 위치 정보 동의 error or getWeather error
-//   }
-// };
+// touchAction
+const touchAction = (initialTemp) => {
+  let temp = Math.round(initialTemp);
+  let opacityIncrement = parseFloat((1/initialTemp).toFixed(3));
+  let currentOpacity = 0;
+  $('.temp').innerText = temp;
 
-getWeather(today, nowTime)
+  const updateDisplay = () => {
+    $('.temp').innerText = temp;
+    $('.item').style.transform = temp % 2 === 0 ? 'rotate(-12deg)' : 'rotate(12deg)';
+    $('.bg').style.opacity = currentOpacity;
+
+    if (temp === 0) {
+      $('.item').style.transform = 'rotate(-12deg) scale(1.2)';
+    }
+  };
+
+  const handleInteraction = () => {
+    if (temp > 0) {
+      temp -= 1;
+      currentOpacity += opacityIncrement;
+      updateDisplay();
+    }
+  }
+  $('.touch-box').addEventListener('touchstart', handleInteraction);
+}
+
+getWeather(today(), nowTime)
     .then(response => {
-      console.log(response)
-      let temp, rainy;
+      let temp;
       response.find(item => {
         if(item.category === 'T1H') temp = item.obsrValue;
-        if(item.category === 'PTY') rainy = item.obsrValue;
       });
-      $('.temp').innerText = `현재 날씨는 ${temp}°C입니다`;
-      $('.rainy').innerText = rainy > 0 ? '지금 비가 오고 있어요☂️' : '지금은 맑아요☀️'
+      touchAction(temp);
     })
     .catch(error => {
-      if(error.message === 'User denied Geolocation'){
-        $('.temp').innerText = '기능을 사용하기 위해서 위치 정보 수집을 허용해주세요'
-      }else {
-        alert('error2!')
-      }
+      console.log(error);
     });
